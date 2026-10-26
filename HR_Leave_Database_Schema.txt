@@ -1,0 +1,49 @@
+Table: Employees (ข้อมูลพนักงาน)
+| Field           | Data Type     | Description                                     | Notes                       |
+|-----------------|---------------|-------------------------------------------------|-----------------------------|
+| EmployeeID      | INT/VARCHAR   | รหัสพนักงาน                                     | Primary Key                 |
+| FirstName       | VARCHAR       | ชื่อ                                            |                             |
+| LastName        | VARCHAR       | นามสกุล                                         |                             |
+| Department      | VARCHAR       | แผนก                                           |                             |
+| Position        | VARCHAR       | ตำแหน่ง                                        |                             |
+| StartDate       | DATE          | วันที่เริ่มทำงาน                                 |                             |
+| Email           | VARCHAR       | อีเมล (สำหรับการแจ้งเตือน)                        |                             |
+| SupervisorID    | INT/VARCHAR   | รหัสหัวหน้างาน                                  | Foreign Key (Self-referencing)|
+
+Table: LeaveTypes (ประเภทการลา)
+| Field           | Data Type     | Description                                     | Notes                       |
+|-----------------|---------------|-------------------------------------------------|-----------------------------|
+| LeaveTypeID     | INT           | รหัสประเภทการลา                                 | Primary Key, Auto-increment |
+| LeaveTypeName   | VARCHAR       | ชื่อประเภทการลา                                 | เช่น "ลากิจ", "ลาป่วย", "ลาพักร้อน" |
+| Description     | TEXT          | คำอธิบายเพิ่มเติมเกี่ยวกับประเภทการลา           |                             |
+| MaxDaysPerYear  | INT           | จำนวนวันลาสูงสุดที่อนุญาตต่อปีสำหรับประเภทนี้  | (ถ้ามี)                      |
+| RequiresApproval| BOOLEAN       | จำเป็นต้องได้รับการอนุมัติหรือไม่                |                             |
+| DeductAnnualLeave| BOOLEAN      | ประเภทการลานี้มีผลหักวันลาพักร้อนคงเหลือหรือไม่ |                             |
+
+Table: LeaveRequests (คำขอการลางาน)
+| Field           | Data Type     | Description                                     | Notes                       |
+|-----------------|---------------|-------------------------------------------------|-----------------------------|
+| LeaveRequestID  | INT           | รหัสคำขอการลา                                   | Primary Key, Auto-increment |
+| EmployeeID      | INT/VARCHAR   | รหัสพนักงานที่ยื่นคำขอ                           | Foreign Key                 |
+| LeaveTypeID     | INT           | ประเภทการลา                                     | Foreign Key                 |
+| RequestedDate   | DATETIME      | วันที่และเวลายื่นคำขอ                            |                             |
+| StartDate       | DATE          | วันที่เริ่มต้นการลา                              |                             |
+| EndDate         | DATE          | วันที่สิ้นสุดการลา                               |                             |
+| DurationDays    | DECIMAL/FLOAT | จำนวนวันลา                                      | อาจเป็น 0.5 วันสำหรับครึ่งวัน |
+| Reason          | TEXT          | เหตุผลในการลา                                   |                             |
+| AttachmentPath  | VARCHAR       | ที่อยู่ไฟล์แนบ (เช่น ใบรับรองแพทย์)               | (ถ้ามี)                      |
+| Status          | VARCHAR       | สถานะของคำขอ                                    | เช่น "Pending", "Approved", "Rejected" |
+| ApprovedByEmployeeID| INT/VARCHAR| รหัสพนักงานที่อนุมัติ                           | Foreign Key                 |
+| ApprovalDate    | DATETIME      | วันที่และเวลาที่ได้รับการอนุมัติ/ปฏิเสธ          | (ถ้ามี)                      |
+| RejectionReason | TEXT          | เหตุผลในการปฏิเสธ                               | (ถ้ามี)                      |
+
+Table: AnnualLeaveBalance (ยอดวันลาพักร้อนคงเหลือรายปี)
+| Field                  | Data Type     | Description                                     | Notes                       |
+|------------------------|---------------|-------------------------------------------------|-----------------------------|
+| AnnualLeaveBalanceID   | INT           | รหัส                                            | Primary Key, Auto-increment |
+| EmployeeID             | INT/VARCHAR   | รหัสพนักงาน                                     | Foreign Key                 |
+| LeaveYear              | INT           | ปีงบประมาณของวันลาพักร้อน                       | เช่น 2026                   |
+| TotalEntitlementDays   | DECIMAL/FLOAT | จำนวนวันลาพักร้อนที่ได้รับทั้งหมดสำหรับปีนั้น   |                             |
+| UsedDays               | DECIMAL/FLOAT | จำนวนวันลาพักร้อนที่ใช้ไปแล้ว                    |                             |
+| RemainingDays          | DECIMAL/FLOAT | จำนวนวันลาพักร้อนคงเหลือ                        |                             |
+| LastUpdated            | DATETIME      | วันที่และเวลาที่อัปเดตล่าสุด                    |                             |

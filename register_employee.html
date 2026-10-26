@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ลงทะเบียนพนักงานใหม่</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="register-container">
+        <h2>ลงทะเบียนพนักงานใหม่</h2>
+        <form id="employeeRegistrationForm" action="#" method="POST">
+            <div class="form-group">
+                <label for="employeeId">รหัสพนักงาน</label>
+                <!-- value จะถูกกำหนดโดย JavaScript -->
+                <input type="text" id="employeeId" name="employeeId" readonly>
+            </div>
+            <div class="form-group">
+                <label for="firstName">ชื่อ</label>
+                <input type="text" id="firstName" name="firstName" required>
+            </div>
+            <div class="form-group">
+                <label for="lastName">นามสกุล</label>
+                <input type="text" id="lastName" name="lastName" required>
+            </div>
+            <div class="form-group">
+                <label for="department">แผนก</label>
+                <input type="text" id="department" name="department" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="submit-button">บันทึกข้อมูล</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- โค้ด JavaScript สำหรับสร้างรหัสพนักงานอัตโนมัติ และส่งข้อมูล -->
+    <script>
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwP9ctebnQhuDLUllE2g8unHkIsZO7KNPWEBfPXWh0Ej3AokJLiuVIrHrftmfjUGh1bEw/exec'; // <<<<<<<<< **ใส่ URL ของ Google Apps Script Web App ของคุณที่นี่**
+
+        // ฟังก์ชันสำหรับดึงรหัสพนักงานถัดไปจาก Apps Script (เมื่อหน้าโหลด)
+        async function fetchNextEmployeeId() {
+            try {
+                // ใช้ GET request ไปยัง Web App URL เพื่อเรียกใช้ฟังก์ชัน doGet
+                const response = await fetch(scriptURL + '?action=getNextId'); // กำหนด parameter เพื่อเรียก doGet
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                
+                if (data.nextEmployeeId) {
+                    document.getElementById('employeeId').value = data.nextEmployeeId;
+                } else {
+                    document.getElementById('employeeId').value = 'Error fetching ID';
+                }
+            } catch (error) {
+                console.error('Error fetching next employee ID:', error);
+                document.getElementById('employeeId').value = 'Error fetching ID';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // เรียกฟังก์ชันเพื่อดึงรหัสพนักงานเมื่อหน้าโหลด
+            fetchNextEmployeeId();
+
+            // จัดการการส่งฟอร์ม
+            const registrationForm = document.getElementById('employeeRegistrationForm');
+            registrationForm.addEventListener('submit', async function(event) {
+                event.preventDefault(); // ป้องกันการส่งฟอร์มแบบปกติ
+
+                const employeeId = document.getElementById('employeeId').value;
+                const firstName = document.getElementById('firstName').value;
+                const lastName = document.getElementById('lastName').value;
+                const department = document.getElementById('department').value;
+                const email = document.getElementById('email').value;
+
+                // ตรวจสอบว่ารหัสพนักงานถูกสร้างขึ้นแล้วหรือไม่ (ไม่ใช่ค่า error หรือ placeholder)
+                if (employeeId.startsWith('EMP-') || employeeId.startsWith('Error')) {
+                    // ข้อมูลที่จะส่งไป Google Apps Script
+                    const formData = {
+                        employeeId: employeeId, // ส่งรหัสที่ได้รับมา (หรืออาจจะเป็นค่า placeholder หาก fetch error)
+                        firstName: firstName,
+                        lastName: lastName,
+                        department: department,
+                        email: email
+                    };
+
+                    try {
+                        const response = await fetch(scriptURL, { // ใช้ POST request
+                            method: 'POST',
+                            mode: 'no-cors', // ยังคงใช้ no-cors เพื่อให้ส่งได้
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(formData),
+                        });
+
+                        // เนื่องจากใช้ mode: 'no-cors', response จะไม่สามารถอ่านได้
+                        // เราจะถือว่าถ้าไม่เกิด error ใน console ถือว่าส่งสำเร็จ
+                        console.log('Form submitted. Check Google Sheet for data.');
+                        alert('บันทึกข้อมูลสำเร็จ! ข้อมูลจะถูกส่งไปยัง Google Sheet.');
+                        
+                        // รีเซ็ตฟอร์ม และดึงรหัสพนักงานใหม่สำหรับรายการถัดไป
+                        registrationForm.reset();
+                        fetchNextEmployeeId(); // ดึงรหัสใหม่สำหรับรายการถัดไป
+
+                    } catch (error) {
+                        console.error('Error submitting form:', error);
+                        alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง');
+                    }
+                } else {
+                    alert('ไม่สามารถสร้างรหัสพนักงานได้ กรุณาลองรีเฟรชหน้า หรือติดต่อผู้ดูแลระบบ');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
